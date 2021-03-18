@@ -1,0 +1,18 @@
+---
+title: "Home Energy"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+q1_2020 <- read_csv("../climate_change/D_EPC_data_2020_Q1_extract_0221.csv")
+
+```
+
+```{r}
+q1_2020 %>% 
+  
+```
