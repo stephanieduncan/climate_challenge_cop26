@@ -5,14 +5,73 @@ output: html_notebook
 
 ```{r}
 library(tidyverse)
+library(janitor)
 ```
 
 ```{r}
-q1_2020 <- read_csv("../climate_change/D_EPC_data_2020_Q1_extract_0221.csv")
+q1_2020 <- read_csv("raw_data/D_EPC_data_2020_Q1_extract_0221.csv")
 
 ```
 
 ```{r}
+dim(q1_2020)
+```
+
+```{r}
+names(q1_2020)
+```
+
+```{r}
+#Checking for missing values across all columns
 q1_2020 %>% 
-  
+  summarise(across(.fns = ~sum(is.na(.x))))
 ```
+
+```{r}
+#removing first row (headers)
+q1_2020_clean <- q1_2020[-1,] %>% 
+  clean_names %>% 
+  #removing columns
+  select(-address1, -address2, -property_uprn, -osg_uprn, -addendum_text, -main_gas)
+```
+
+```{r}
+q1_2020_clean %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+```{r}
+#converting town names to lower case to reduce multiple instances of the same town
+	q1_2020_clean$post_town = tolower(q1_2020_clean$post_town)
+```
+
+```{r}
+#removing rogue white spaces from town names
+q1_2020_clean$post_town = str_trim(q1_2020_clean$post_town)
+```
+
+```{r}
+#Checking for unique names for towns in alphabetical order
+unique(sort(q1_2020_clean$post_town))
+```
+
+```{r}
+#Hard coding to clean some town names
+q1_2020_clean <- q1_2020_clean %>% 
+  mutate(
+    post_town = if_else(post_town == "glasgow city", "glasgow", post_town),
+    post_town = if_else(post_town == "anstruther,fife", "anstruther", post_town),
+    post_town = if_else(post_town == "perth &amp; kinross", "perth and kinross", post_town),
+    post_town = if_else(post_town == "st. andrews", "st andrews", post_town),
+    post_town = if_else(post_town == "linithgow", "linlithgow", post_town),
+    post_town = if_else(post_town == "gorebeidge", "gorebridge", post_town),
+    post_town = if_else(post_town == "by kyle of lochalsh, ross-shire", "kyle of lochalsh", post_town),
+    post_town = if_else(post_town == "kyle", "kyle of lochalsh", post_town),
+    post_town = if_else(post_town == "balfron station", "balfron", post_town),
+    post_town = if_else(post_town == "\"denny \"", "denny", post_town),
+    post_town = if_else(post_town == "\"glasgow \"", "glasgow", post_town),
+    post_town = if_else(post_town == "\"edinburgh \"", "edinburgh", post_town)
+  )
+```
+
+
