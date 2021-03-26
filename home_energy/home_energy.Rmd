@@ -3,13 +3,34 @@ title: "Home Energy"
 output: html_notebook
 ---
 
+#Data Zone 2001 Lookup Codes Dataset:- https://www.opendata.nhs.scot/es_AR/dataset/geography-codes-and-labels/resource/e92d19d4-ced7-40c8-b628-e28e4528fc41
+
 ```{r}
+library(shiny)
+library(shinydashboard)
 library(tidyverse)
+library(sf)
+library(here)
+library(scales)
+library(leaflet)
+library(htmltools)
 library(janitor)
 ```
 
 ```{r}
-q1_2020 <- read_csv("raw_data/D_EPC_data_2020_Q1_extract_0221.csv")
+#data zone lookup file
+zone_lookup <- read_csv("raw_data/datazone_lookup.csv") %>% clean_names()
+```
+
+```{r}
+zone_lookup_clean <- zone_lookup %>% 
+  select(data_zone, ca_name)
+```
+
+
+```{r}
+#Quarter 1, 2020
+q1_2020 <- read_csv("raw_data/D_EPC_data_2020_Q1_extract_0221.csv") %>%  clean_names()
 
 ```
 
@@ -21,28 +42,30 @@ dim(q1_2020)
 sort(names(q1_2020))
 ```
 
-```{r}
-#Checking for missing values across all columns
-q1_2020 %>% 
-  summarise(across(.fns = ~sum(is.na(.x))))
-```
 
 ```{r}
 #removing first row (headers)
 q1_2020_clean <- q1_2020[-1,] %>% 
-  clean_names %>% 
-  #removing columns
-  select(-address1, -address2, -property_uprn, -osg_uprn, -addendum_text, -main_gas)
+  #keeping relevent columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
 ```
 
+
 ```{r}
+#Checking for missing values across all columns
 q1_2020_clean %>% 
   summarise(across(.fns = ~sum(is.na(.x))))
 ```
+
+
 ```{r}
 #removing missing values from specific columns
 q1_2020_clean <- q1_2020_clean %>% 
-  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, post_town)
+  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+```
+
+```{r}
+q1_2020_clean$data_zone <- str_extract(q1_2020_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
 ```
 
 
@@ -86,7 +109,7 @@ str(q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr)
 ```
 
 ```{r}
-#converting from str to numeric
+#converting from string to numeric
 q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
 
 q1_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q1_2020_clean$primary_energy_indicator_k_wh_m_year))
@@ -94,13 +117,287 @@ q1_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q1
 q1_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2020_clean$current_emissions_t_co2_yr))
 ```
 
+
+
 ```{r}
-#Table of the mean_co2_emissions_current_per_floor_area_kg_co2_m_yr per town
-town_co2_year <- q1_2020_clean %>% 
-  group_by(post_town) %>% 
-  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = mean(co2_emissions_current_per_floor_area_kg_co2_m_yr),
-            mean_primary_energy_indicator_k_wh_m_year = mean(primary_energy_indicator_k_wh_m_year),
-            mean_current_emissions_t_co2_yr = mean(current_emissions_t_co2_yr))
-town_co2_year
+#adding year and quarter columns
+q1_2020_clean <- q1_2020_clean %>% 
+  mutate(
+    year = "2020",
+    quarter = "1")
+```
+
+
+```{r}
+#joining datazone_lookup with home energy dataset
+q1_2020_zone <- q1_2020_clean %>% 
+  left_join(zone_lookup_clean, by = "data_zone") %>% 
+  select(-post_town, -postcode)
+```
+
+
+# Reading in files for Quarter 2, 3 & 4 to complete Year 2020
+```{r}
+q2_2020 <- read_csv(here("raw_data/D_EPC_data_2020_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2020 <- read_csv(here("raw_data/D_EPC_data_2020_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2020 <- read_csv(here("raw_data/D_EPC_data_2020_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+# Cleaning quarters 2, 3 & 4
+```{r}
+#cleaning quarter 2
+q2_2020_clean <- q2_2020[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+```
+
+```{r}
+#cleaning quarter 3
+q3_2020_clean <- q3_2020[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+```
+
+```{r}
+#cleaning quarter 4
+q4_2020_clean <- q4_2020[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+```
+
+# Checking for missing values across all columns for Quarter 2
+```{r}
+q2_2020_clean %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+
+# Checking for missing values across all columns for Quarter 3
+```{r}
+q3_2020_clean %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+# Checking for missing values across all columns for Quarter 4
+```{r}
+q4_2020_clean %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+
+# Removing missing values from specific columns for Quarter 2
+```{r}
+q2_2020_clean <- q2_2020_clean %>% 
+  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+```
+
+
+# Removing missing values from specific columns for Quarter 3
+```{r}
+q3_2020_clean <- q3_2020_clean %>% 
+  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+```
+
+# Removing missing values from specific columns for Quarter 4
+```{r}
+q4_2020_clean <- q4_2020_clean %>% 
+  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+```
+
+
+# Extracting S01 code for Quarter 2
+```{r}
+q2_2020_clean$data_zone <- str_extract(q2_2020_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+# Extracting S01 code for Quarter 3
+```{r}
+q3_2020_clean$data_zone <- str_extract(q3_2020_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+# Extracting S01 code for Quarter 4
+```{r}
+q4_2020_clean$data_zone <- str_extract(q4_2020_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+#Converting from string to numeric for energy columns
+```{r}
+q2_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q2_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+
+q2_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q2_2020_clean$primary_energy_indicator_k_wh_m_year))
+
+q2_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2020_clean$current_emissions_t_co2_yr))
+
+q3_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q3_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+
+q3_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q3_2020_clean$primary_energy_indicator_k_wh_m_year))
+
+q3_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2020_clean$current_emissions_t_co2_yr))
+
+q4_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q4_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+
+q4_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q4_2020_clean$primary_energy_indicator_k_wh_m_year))
+
+q4_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2020_clean$current_emissions_t_co2_yr))
+```
+
+#Removing post_town & postcode for Quarters 2, 3 & 4
+```{r}
+q2_2020_clean <- q2_2020_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2020_clean <- q3_2020_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2020_clean <- q4_2020_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+# Adding year and quarter columns for 2, 3 & 4
+```{r}
+q2_2020_clean <- q2_2020_clean %>% 
+  mutate(
+    year = "2020",
+    quarter = "2")
+
+q3_2020_clean <- q3_2020_clean %>% 
+  mutate(
+    year = "2020",
+    quarter = "3")
+
+q4_2020_clean <- q4_2020_clean %>% 
+  mutate(
+    year = "2020",
+    quarter = "4")
+```
+
+#Joining quarter 2, 3 & 4 datasets with datazone_lookup
+```{r}
+q2_2020_zone <- q2_2020_clean %>% 
+  left_join(zone_lookup_clean, by = "data_zone")
+
+q3_2020_zone <- q3_2020_clean %>% 
+  left_join(zone_lookup_clean, by = "data_zone")
+
+q4_2020_zone <- q4_2020_clean %>% 
+  left_join(zone_lookup_clean, by = "data_zone")
+```
+
+
+
+# Joining 2020 data (all quarters together)
+```{r}
+home_energy_2020 <- rbind(q1_2020_zone, q2_2020_zone, q3_2020_zone, q4_2020_zone) 
+```
+
+```{r}
+home_energy_2020 %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+
+#Table of the means per town for quarter 1 only
+```{r}
+town_mean_q1 <- q1_2020_zone %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = round(mean(co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2),
+            mean_primary_energy_indicator_k_wh_m_year = round(mean(primary_energy_indicator_k_wh_m_year), digits = 2),
+            mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
+town_mean_q1
+```
+
+
+#Table of the means per town for 2020
+```{r}
+town_mean_2020 <- home_energy_2020 %>% 
+  group_by(ca_name, quarter) %>% 
+  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = round(mean(co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2),
+            mean_primary_energy_indicator_k_wh_m_year = round(mean(primary_energy_indicator_k_wh_m_year), digits = 2),
+            mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
+town_mean_2020
+```
+
+
+#Visualising mean_co2_emissions_current_per_floor_area_kg_co2_m_yr for cities in 2020
+```{r}
+mean_co2_emissions_current_per_floor_2020 <- town_mean_2020 %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_co2_emissions_2020 = round(mean(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2))
+
+mean_co2_emissions_current_per_floor_2020
+```
+
+```{r}
+mean_co2_emissions_current_per_floor_2020 %>% 
+  ggplot() +
+  aes(x = mean_co2_emissions_2020, y = ca_name) +
+  geom_col(fill = "dark green") +
+  theme_minimal() +
+  labs(
+    y = "Council Area",
+    x = "Mean CO2 Emissions Per Current Floor Area (kg CO2/m^2/Year)",
+    title = "Mean CO2 Emissions Per Current Floor Area of Homes by Council Area",
+    subtitle = "2020"
+  ) +
+  theme(axis.text.x = element_text(angle=45,hjust=1)) 
+
+mean_co2_emissions_current_per_floor_2020
+```
+
+
+# Visualising Mean Primary Energy Indicator of Homes by Council Area
+
+```{r}
+mean_primary_energy_indicator_2020 <- town_mean_2020 %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_primary_2020 = round(mean(mean_primary_energy_indicator_k_wh_m_year), digits = 2))
+
+mean_primary_energy_indicator_2020
+```
+
+
+```{r}
+mean_primary_energy_indicator_2020 %>% 
+  ggplot() +
+  aes(x = mean_primary_2020, y = ca_name) +
+  geom_col(fill = "dark green") +
+  theme_minimal() +
+  labs(
+    y = "Council Area",
+    x = "Mean Primary Energy Indicator (kWh/m^2/yr)",
+    title = "Mean Primary Energy Indicator of Homes by Council Area",
+    subtitle = "2020"
+  ) +
+  theme(axis.text.x = element_text(angle=45,hjust=1)) 
+
+mean_primary_energy_indicator_2020
+```
+
+
+# Visualising Mean Current Emissions of Homes by Council Area (Tonnes CO2/Year) 
+
+```{r}
+mean_current_emissions_2020 <- town_mean_2020 %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_current_emissions_2020 = round(mean(mean_current_emissions_t_co2_yr), digits = 2))
+
+mean_current_emissions_2020
+```
+
+```{r}
+mean_current_emissions_2020 %>% 
+  ggplot() +
+  aes(x = mean_current_emissions_2020, y = ca_name) +
+  geom_col(fill = "dark green") +
+  theme_minimal() +
+  labs(
+    y = "Council Area",
+    x = "Mean Current Emissions (Tonnes CO2/Year)",
+    title = "Mean Current Emissions of Homes by Council Area",
+    subtitle = "2020"
+  ) +
+  theme(axis.text.x = element_text(angle=45,hjust=1)) 
 ```
 
