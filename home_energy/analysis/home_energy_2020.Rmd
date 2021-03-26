@@ -1,0 +1,133 @@
+---
+title: "Home Energy Visualisations by Council Area in Scotland 2020"
+author: "Stephanie Duncan"
+date: "26/03/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Initial data visualisations from home energy certifications by council area in Scotland for 2020.
+
+Includes:
+
+1. Mean CO2 Emissions Current Floor Area of Homes by Council Area - Annual CO2 equivalent emissions per square metre of floor area (units: kg.CO2e/m2/yr).
+
+2. Mean Primary Energy Indicator - The amount of energy required at source, before conversion and transmission, to meet the calculated energy demand of the dwelling (Units: kWh/m2/year).
+
+3. Mean Current Carbon Dioxide Emissions - The total annual emissions reduction for the building based upon the calculated energy demand for heating, cooling, lighting and ventilating the building. (Units: tonnes per year).
+
+
+```{r include=FALSE}
+
+library(shiny)
+library(shinydashboard)
+library(tidyverse)
+library(sf)
+library(here)
+library(scales)
+library(leaflet)
+library(htmltools)
+library(janitor)
+```
+
+
+```{r include=FALSE}
+#Reading in cleaned file
+home_energy_2020 <- read_csv(here("clean_data/home_energy_2020.csv"))
+```
+
+
+```{r include=FALSE}
+
+#Table of the means per town for 2020
+town_mean_2020 <- home_energy_2020 %>% 
+  group_by(ca_name, quarter) %>% 
+  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = round(mean(co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2),
+            mean_primary_energy_indicator_k_wh_m_year = round(mean(primary_energy_indicator_k_wh_m_year), digits = 2),
+            mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
+town_mean_2020
+```
+
+## 1. Mean CO2 Emissions Current Floor Area of Homes by Council Area
+
+
+```{r include=FALSE}
+
+mean_co2_emissions_current_per_floor_2020 <- town_mean_2020 %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_co2_emissions_2020 = round(mean(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2))
+
+mean_co2_emissions_current_per_floor_2020
+
+```
+
+```{r echo=FALSE}
+mean_co2_emissions_current_per_floor_2020 %>% 
+  ggplot() +
+  aes(x = mean_co2_emissions_2020, y = ca_name) +
+  geom_col(fill = "dark green") +
+  theme_minimal() +
+  labs(
+    y = "Council Area",
+    x = "Mean CO2 Emissions Per Current Floor Area (kg CO2/m^2/Year)",
+    title = "Mean CO2 Emissions Current Floor Area of Homes by Council Area",
+    subtitle = "2020"
+  ) +
+  theme(axis.text.x = element_text(angle=45,hjust=1)) 
+
+```
+
+## 2. Mean Primary Energy Indicator of Homes by Council Area
+
+```{r include=FALSE}
+
+mean_primary_energy_indicator_2020 <- town_mean_2020 %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_primary_2020 = round(mean(mean_primary_energy_indicator_k_wh_m_year), digits = 2))
+
+mean_primary_energy_indicator_2020
+```
+
+```{r echo=FALSE}
+mean_primary_energy_indicator_2020 %>% 
+  ggplot() +
+  aes(x = mean_primary_2020, y = ca_name) +
+  geom_col(fill = "dark green") +
+  theme_minimal() +
+  labs(
+    y = "Council Area",
+    x = "Mean Primary Energy Indicator (kWh/m^2/yr)",
+    title = "Mean Primary Energy Indicator of Homes by Council Area",
+    subtitle = "2020"
+  ) +
+  theme(axis.text.x = element_text(angle=45,hjust=1)) 
+
+```
+
+## 3. Mean Current Carbon Dioxide Emissions
+
+```{r include=FALSE}
+mean_current_emissions_2020 <- town_mean_2020 %>% 
+  group_by(ca_name) %>% 
+  summarise(mean_current_emissions_2020 = round(mean(mean_current_emissions_t_co2_yr), digits = 2))
+
+mean_current_emissions_2020
+```
+
+
+```{r echo=FALSE}
+mean_current_emissions_2020 %>% 
+  ggplot() +
+  aes(x = mean_current_emissions_2020, y = ca_name) +
+  geom_col(fill = "dark green") +
+  theme_minimal() +
+  labs(
+    y = "Council Area",
+    x = "Mean Current Emissions (Tonnes CO2/Year)",
+    title = "Mean Current Emissions of Homes by Council Area",
+    subtitle = "2020"
+  ) +
+  theme(axis.text.x = element_text(angle=45,hjust=1)) 
+```
+

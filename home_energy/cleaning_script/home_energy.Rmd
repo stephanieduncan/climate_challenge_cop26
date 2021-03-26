@@ -292,6 +292,12 @@ q4_2020_zone <- q4_2020_clean %>%
 home_energy_2020 <- rbind(q1_2020_zone, q2_2020_zone, q3_2020_zone, q4_2020_zone) 
 ```
 
+#Writing to csv
+```{r}
+write_csv(home_energy_2020, "clean_data/home_energy_2020.csv")
+```
+
+
 ```{r}
 home_energy_2020 %>% 
   summarise(across(.fns = ~sum(is.na(.x))))
@@ -299,6 +305,7 @@ home_energy_2020 %>%
 
 
 #Table of the means per town for quarter 1 only
+
 ```{r}
 town_mean_q1 <- q1_2020_zone %>% 
   group_by(ca_name) %>% 
@@ -306,98 +313,6 @@ town_mean_q1 <- q1_2020_zone %>%
             mean_primary_energy_indicator_k_wh_m_year = round(mean(primary_energy_indicator_k_wh_m_year), digits = 2),
             mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
 town_mean_q1
-```
 
-
-#Table of the means per town for 2020
-```{r}
-town_mean_2020 <- home_energy_2020 %>% 
-  group_by(ca_name, quarter) %>% 
-  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = round(mean(co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2),
-            mean_primary_energy_indicator_k_wh_m_year = round(mean(primary_energy_indicator_k_wh_m_year), digits = 2),
-            mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
-town_mean_2020
-```
-
-
-#Visualising mean_co2_emissions_current_per_floor_area_kg_co2_m_yr for cities in 2020
-```{r}
-mean_co2_emissions_current_per_floor_2020 <- town_mean_2020 %>% 
-  group_by(ca_name) %>% 
-  summarise(mean_co2_emissions_2020 = round(mean(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2))
-
-mean_co2_emissions_current_per_floor_2020
-```
-
-```{r}
-mean_co2_emissions_current_per_floor_2020 %>% 
-  ggplot() +
-  aes(x = mean_co2_emissions_2020, y = ca_name) +
-  geom_col(fill = "dark green") +
-  theme_minimal() +
-  labs(
-    y = "Council Area",
-    x = "Mean CO2 Emissions Per Current Floor Area (kg CO2/m^2/Year)",
-    title = "Mean CO2 Emissions Per Current Floor Area of Homes by Council Area",
-    subtitle = "2020"
-  ) +
-  theme(axis.text.x = element_text(angle=45,hjust=1)) 
-
-mean_co2_emissions_current_per_floor_2020
-```
-
-
-# Visualising Mean Primary Energy Indicator of Homes by Council Area
-
-```{r}
-mean_primary_energy_indicator_2020 <- town_mean_2020 %>% 
-  group_by(ca_name) %>% 
-  summarise(mean_primary_2020 = round(mean(mean_primary_energy_indicator_k_wh_m_year), digits = 2))
-
-mean_primary_energy_indicator_2020
-```
-
-
-```{r}
-mean_primary_energy_indicator_2020 %>% 
-  ggplot() +
-  aes(x = mean_primary_2020, y = ca_name) +
-  geom_col(fill = "dark green") +
-  theme_minimal() +
-  labs(
-    y = "Council Area",
-    x = "Mean Primary Energy Indicator (kWh/m^2/yr)",
-    title = "Mean Primary Energy Indicator of Homes by Council Area",
-    subtitle = "2020"
-  ) +
-  theme(axis.text.x = element_text(angle=45,hjust=1)) 
-
-mean_primary_energy_indicator_2020
-```
-
-
-# Visualising Mean Current Emissions of Homes by Council Area (Tonnes CO2/Year) 
-
-```{r}
-mean_current_emissions_2020 <- town_mean_2020 %>% 
-  group_by(ca_name) %>% 
-  summarise(mean_current_emissions_2020 = round(mean(mean_current_emissions_t_co2_yr), digits = 2))
-
-mean_current_emissions_2020
-```
-
-```{r}
-mean_current_emissions_2020 %>% 
-  ggplot() +
-  aes(x = mean_current_emissions_2020, y = ca_name) +
-  geom_col(fill = "dark green") +
-  theme_minimal() +
-  labs(
-    y = "Council Area",
-    x = "Mean Current Emissions (Tonnes CO2/Year)",
-    title = "Mean Current Emissions of Homes by Council Area",
-    subtitle = "2020"
-  ) +
-  theme(axis.text.x = element_text(angle=45,hjust=1)) 
 ```
 
