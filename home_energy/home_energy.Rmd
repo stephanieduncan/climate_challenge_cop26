@@ -18,7 +18,7 @@ dim(q1_2020)
 ```
 
 ```{r}
-names(q1_2020)
+sort(names(q1_2020))
 ```
 
 ```{r}
@@ -39,6 +39,12 @@ q1_2020_clean <- q1_2020[-1,] %>%
 q1_2020_clean %>% 
   summarise(across(.fns = ~sum(is.na(.x))))
 ```
+```{r}
+#removing missing values from specific columns
+q1_2020_clean <- q1_2020_clean %>% 
+  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, post_town)
+```
+
 
 ```{r}
 #converting town names to lower case to reduce multiple instances of the same town
@@ -74,4 +80,27 @@ q1_2020_clean <- q1_2020_clean %>%
   )
 ```
 
+```{r}
+#checking data type of variable
+str(q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr)
+```
+
+```{r}
+#converting from str to numeric
+q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+
+q1_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q1_2020_clean$primary_energy_indicator_k_wh_m_year))
+
+q1_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2020_clean$current_emissions_t_co2_yr))
+```
+
+```{r}
+#Table of the mean_co2_emissions_current_per_floor_area_kg_co2_m_yr per town
+town_co2_year <- q1_2020_clean %>% 
+  group_by(post_town) %>% 
+  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = mean(co2_emissions_current_per_floor_area_kg_co2_m_yr),
+            mean_primary_energy_indicator_k_wh_m_year = mean(primary_energy_indicator_k_wh_m_year),
+            mean_current_emissions_t_co2_yr = mean(current_emissions_t_co2_yr))
+town_co2_year
+```
 
