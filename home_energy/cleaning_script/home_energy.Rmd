@@ -19,7 +19,7 @@ library(janitor)
 
 ```{r}
 #data zone lookup file
-zone_lookup <- read_csv("raw_data/datazone_lookup.csv") %>% clean_names()
+zone_lookup <- read_csv(here("raw_data/datazone_lookup.csv")) %>% clean_names()
 ```
 
 ```{r}
@@ -30,7 +30,7 @@ zone_lookup_clean <- zone_lookup %>%
 
 ```{r}
 #Quarter 1, 2020
-q1_2020 <- read_csv("raw_data/D_EPC_data_2020_Q1_extract_0221.csv") %>%  clean_names()
+q1_2020 <- read_csv(here("raw_data/D_EPC_data_2020_Q1_extract_0221.csv")) %>%  clean_names()
 
 ```
 
@@ -46,8 +46,10 @@ sort(names(q1_2020))
 ```{r}
 #removing first row (headers)
 q1_2020_clean <- q1_2020[-1,] %>% 
-  #keeping relevent columns
-  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
 ```
 
 
@@ -61,7 +63,7 @@ q1_2020_clean %>%
 ```{r}
 #removing missing values from specific columns
 q1_2020_clean <- q1_2020_clean %>% 
-  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+  drop_na(co2_emissions_per_floor_area, data_zone)
 ```
 
 ```{r}
@@ -105,14 +107,14 @@ q1_2020_clean <- q1_2020_clean %>%
 
 ```{r}
 #checking data type of variable
-str(q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr)
+str(q1_2020_clean$co2_emissions_per_floor_area)
 ```
 
 ```{r}
 #converting from string to numeric
-q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q1_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+q1_2020_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2020_clean$co2_emissions_per_floor_area))
 
-q1_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q1_2020_clean$primary_energy_indicator_k_wh_m_year))
+q1_2020_clean$primary_energy <- as.numeric(as.character(q1_2020_clean$primary_energy))
 
 q1_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2020_clean$current_emissions_t_co2_yr))
 ```
@@ -129,9 +131,8 @@ q1_2020_clean <- q1_2020_clean %>%
 
 
 ```{r}
-#joining datazone_lookup with home energy dataset
-q1_2020_zone <- q1_2020_clean %>% 
-  left_join(zone_lookup_clean, by = "data_zone") %>% 
+#removing irrelevent columns
+q1_2020_clean <- q1_2020_clean %>% 
   select(-post_town, -postcode)
 ```
 
@@ -148,21 +149,27 @@ q4_2020 <- read_csv(here("raw_data/D_EPC_data_2020_Q4_extract_0221.csv")) %>%  c
 #cleaning quarter 2
 q2_2020_clean <- q2_2020[-1,] %>% 
   #keeping relevant columns
-  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
 ```
 
 ```{r}
 #cleaning quarter 3
 q3_2020_clean <- q3_2020[-1,] %>% 
   #keeping relevant columns
-  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
 ```
 
 ```{r}
 #cleaning quarter 4
 q4_2020_clean <- q4_2020[-1,] %>% 
   #keeping relevant columns
-  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year)
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
 ```
 
 # Checking for missing values across all columns for Quarter 2
@@ -188,20 +195,20 @@ q4_2020_clean %>%
 # Removing missing values from specific columns for Quarter 2
 ```{r}
 q2_2020_clean <- q2_2020_clean %>% 
-  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+  drop_na(co2_emissions_per_floor_area, data_zone)
 ```
 
 
 # Removing missing values from specific columns for Quarter 3
 ```{r}
 q3_2020_clean <- q3_2020_clean %>% 
-  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+  drop_na(co2_emissions_per_floor_area, data_zone)
 ```
 
 # Removing missing values from specific columns for Quarter 4
 ```{r}
 q4_2020_clean <- q4_2020_clean %>% 
-  drop_na(co2_emissions_current_per_floor_area_kg_co2_m_yr, data_zone)
+  drop_na(co2_emissions_per_floor_area, data_zone)
 ```
 
 
@@ -223,21 +230,21 @@ q4_2020_clean$data_zone <- str_extract(q4_2020_clean$data_zone, "[Ss][0-9][0-9][
 
 #Converting from string to numeric for energy columns
 ```{r}
-q2_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q2_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+q2_2020_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2020_clean$co2_emissions_per_floor_area))
 
-q2_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q2_2020_clean$primary_energy_indicator_k_wh_m_year))
+q2_2020_clean$primary_energy <- as.numeric(as.character(q2_2020_clean$primary_energy))
 
 q2_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2020_clean$current_emissions_t_co2_yr))
 
-q3_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q3_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+q3_2020_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2020_clean$co2_emissions_per_floor_area))
 
-q3_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q3_2020_clean$primary_energy_indicator_k_wh_m_year))
+q3_2020_clean$primary_energy <- as.numeric(as.character(q3_2020_clean$primary_energy))
 
 q3_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2020_clean$current_emissions_t_co2_yr))
 
-q4_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr <- as.numeric(as.character(q4_2020_clean$co2_emissions_current_per_floor_area_kg_co2_m_yr))
+q4_2020_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2020_clean$co2_emissions_per_floor_area))
 
-q4_2020_clean$primary_energy_indicator_k_wh_m_year <- as.numeric(as.character(q4_2020_clean$primary_energy_indicator_k_wh_m_year))
+q4_2020_clean$primary_energy <- as.numeric(as.character(q4_2020_clean$primary_energy))
 
 q4_2020_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2020_clean$current_emissions_t_co2_yr))
 ```
@@ -273,34 +280,1030 @@ q4_2020_clean <- q4_2020_clean %>%
     quarter = "4")
 ```
 
-#Joining quarter 2, 3 & 4 datasets with datazone_lookup
+
+# Reading in files for Years 2012 - 2019
 ```{r}
-q2_2020_zone <- q2_2020_clean %>% 
-  left_join(zone_lookup_clean, by = "data_zone")
+q1_2019 <- read_csv(here("raw_data/D_EPC_data_2019_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2019 <- read_csv(here("raw_data/D_EPC_data_2019_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2019 <- read_csv(here("raw_data/D_EPC_data_2019_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2019 <- read_csv(here("raw_data/D_EPC_data_2019_Q4_extract_0221.csv")) %>%  clean_names() 
+```
 
-q3_2020_zone <- q3_2020_clean %>% 
-  left_join(zone_lookup_clean, by = "data_zone")
+#2018
+```{r}
+q1_2018 <- read_csv(here("raw_data/D_EPC_data_2018_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2018 <- read_csv(here("raw_data/D_EPC_data_2018_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2018 <- read_csv(here("raw_data/D_EPC_data_2018_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2018 <- read_csv(here("raw_data/D_EPC_data_2018_Q4_extract_0221.csv")) %>%  clean_names() 
+```
 
-q4_2020_zone <- q4_2020_clean %>% 
+
+#2017
+```{r}
+q1_2017 <- read_csv(here("raw_data/D_EPC_data_2017_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2017 <- read_csv(here("raw_data/D_EPC_data_2017_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2017 <- read_csv(here("raw_data/D_EPC_data_2017_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2017 <- read_csv(here("raw_data/D_EPC_data_2017_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+
+#2016
+```{r}
+q1_2016 <- read_csv(here("raw_data/D_EPC_data_2016_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2016 <- read_csv(here("raw_data/D_EPC_data_2016_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2016 <- read_csv(here("raw_data/D_EPC_data_2016_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2016 <- read_csv(here("raw_data/D_EPC_data_2016_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+
+#2015
+```{r}
+q1_2015 <- read_csv(here("raw_data/D_EPC_data_2015_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2015 <- read_csv(here("raw_data/D_EPC_data_2015_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2015 <- read_csv(here("raw_data/D_EPC_data_2015_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2015 <- read_csv(here("raw_data/D_EPC_data_2015_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+
+#2014
+```{r}
+q1_2014 <- read_csv(here("raw_data/D_EPC_data_2014_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2014 <- read_csv(here("raw_data/D_EPC_data_2014_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2014 <- read_csv(here("raw_data/D_EPC_data_2014_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2014 <- read_csv(here("raw_data/D_EPC_data_2014_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+
+#2013
+```{r}
+q1_2013 <- read_csv(here("raw_data/D_EPC_data_2013_Q1_extract_0221.csv")) %>%  clean_names() 
+q2_2013 <- read_csv(here("raw_data/D_EPC_data_2013_Q2_extract_0221.csv")) %>%  clean_names() 
+q3_2013 <- read_csv(here("raw_data/D_EPC_data_2013_Q3_extract_0221.csv")) %>%  clean_names() 
+q4_2013 <- read_csv(here("raw_data/D_EPC_data_2013_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+
+
+#2012
+```{r}
+q4_2012 <- read_csv(here("raw_data/D_EPC_data_2012_Q4_extract_0221.csv")) %>%  clean_names() 
+```
+
+# Cleaning 
+```{r}
+# Year 2019
+#removing first row
+q1_2019_clean <- q1_2019[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
+
+q2_2019_clean <- q2_2019[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
+
+q3_2019_clean <- q3_2019[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
+
+q4_2019_clean <- q4_2019[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
+```
+
+```{r}
+# Year 2018
+#removing first row
+q1_2018_clean <- q1_2018[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q2_2018_clean <- q2_2018[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q3_2018_clean <- q3_2018[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
+
+q4_2018_clean <- q4_2018[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m_yr)
+```
+
+
+```{r}
+# Year 2017
+#removing first row
+q1_2017_clean <- q1_2017[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q2_2017_clean <- q2_2017[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q3_2017_clean <- q3_2017[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q4_2017_clean <- q4_2017[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+```
+
+
+```{r}
+# Year 2016
+#removing first row
+q1_2016_clean <- q1_2016[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q2_2016_clean <- q2_2016[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q3_2016_clean <- q3_2016[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q4_2016_clean <- q4_2016[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+```
+
+
+```{r}
+# Year 2015
+#removing first row
+q1_2015_clean <- q1_2015[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q2_2015_clean <- q2_2015[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q3_2015_clean <- q3_2015[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q4_2015_clean <- q4_2015[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+```
+
+
+```{r}
+# Year 2014
+#removing first row
+q1_2014_clean <- q1_2014[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q2_2014_clean <- q2_2014[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q3_2014_clean <- q3_2014[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q4_2014_clean <- q4_2014[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+```
+
+
+```{r}
+# Year 2013
+#removing first row
+q1_2013_clean <- q1_2013[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q2_2013_clean <- q2_2013[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q3_2013_clean <- q3_2013[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+
+q4_2013_clean <- q4_2013[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+```
+
+
+```{r}
+# Year 2012
+#removing first row
+q4_2012_clean <- q4_2012[-1,] %>% 
+  #keeping relevant columns
+  select(post_town, postcode, co2_emissions_current_per_floor_area_kg_co2_m2_yr, current_emissions_t_co2_yr, data_zone, primary_energy_indicator_k_wh_m2_year) %>% 
+  rename(primary_energy = primary_energy_indicator_k_wh_m2_year,
+         co2_emissions_per_floor_area = co2_emissions_current_per_floor_area_kg_co2_m2_yr)
+```
+
+# Checking for missing values across all columns for Quarter 1, 2019
+```{r}
+q1_2019_clean %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+
+# Checking for missing values across all columns for 2018
+```{r}
+q1_2018_clean %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
+```
+
+
+
+# Removing missing values from specific columns for 2019
+```{r}
+q1_2019_clean <- q1_2019_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2019_clean <- q2_2019_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2019_clean <- q3_2019_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2019_clean <- q4_2019_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2018
+```{r}
+q1_2018_clean <- q1_2018_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2018_clean <- q2_2018_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2018_clean <- q3_2018_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2018_clean <- q4_2018_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2017
+```{r}
+q1_2017_clean <- q1_2017_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2017_clean <- q2_2017_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2017_clean <- q3_2017_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2017_clean <- q4_2017_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2016
+```{r}
+q1_2016_clean <- q1_2016_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2016_clean <- q2_2016_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2016_clean <- q3_2016_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2016_clean <- q4_2016_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2015
+```{r}
+q1_2015_clean <- q1_2015_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2015_clean <- q2_2015_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2015_clean <- q3_2015_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2015_clean <- q4_2015_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2014
+```{r}
+q1_2014_clean <- q1_2014_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2014_clean <- q2_2014_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2014_clean <- q3_2014_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2014_clean <- q4_2014_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2013
+```{r}
+q1_2013_clean <- q1_2013_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q2_2013_clean <- q2_2013_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q3_2013_clean <- q3_2013_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+
+q4_2013_clean <- q4_2013_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+
+# Removing missing values from specific columns for 2012
+```{r}
+q4_2012_clean <- q4_2012_clean %>% 
+  drop_na(co2_emissions_per_floor_area, data_zone)
+```
+
+# Extracting S01 code for 2019
+```{r}
+q1_2019_clean$data_zone <- str_extract(q1_2019_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2019_clean$data_zone <- str_extract(q2_2019_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2019_clean$data_zone <- str_extract(q3_2019_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2019_clean$data_zone <- str_extract(q4_2019_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2018
+```{r}
+q1_2018_clean$data_zone <- str_extract(q1_2018_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2018_clean$data_zone <- str_extract(q2_2018_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2018_clean$data_zone <- str_extract(q3_2018_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2018_clean$data_zone <- str_extract(q4_2018_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2017
+```{r}
+q1_2017_clean$data_zone <- str_extract(q1_2017_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2017_clean$data_zone <- str_extract(q2_2017_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2017_clean$data_zone <- str_extract(q3_2017_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2017_clean$data_zone <- str_extract(q4_2017_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2016
+```{r}
+q1_2016_clean$data_zone <- str_extract(q1_2016_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2016_clean$data_zone <- str_extract(q2_2016_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2016_clean$data_zone <- str_extract(q3_2016_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2016_clean$data_zone <- str_extract(q4_2016_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2015
+```{r}
+q1_2015_clean$data_zone <- str_extract(q1_2015_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2015_clean$data_zone <- str_extract(q2_2015_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2015_clean$data_zone <- str_extract(q3_2015_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2015_clean$data_zone <- str_extract(q4_2015_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2014
+```{r}
+q1_2014_clean$data_zone <- str_extract(q1_2014_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2014_clean$data_zone <- str_extract(q2_2014_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2014_clean$data_zone <- str_extract(q3_2014_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2014_clean$data_zone <- str_extract(q4_2014_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2013
+```{r}
+q1_2013_clean$data_zone <- str_extract(q1_2013_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q2_2013_clean$data_zone <- str_extract(q2_2013_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q3_2013_clean$data_zone <- str_extract(q3_2013_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+q4_2013_clean$data_zone <- str_extract(q4_2013_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+
+# Extracting S01 code for 2012
+```{r}
+q4_2012_clean$data_zone <- str_extract(q4_2012_clean$data_zone, "[Ss][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]")
+```
+
+#Converting from string to numeric for energy columns in 2019 datasets
+```{r}
+q1_2019_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2019_clean$co2_emissions_per_floor_area))
+
+q1_2019_clean$primary_energy <- as.numeric(as.character(q1_2019_clean$primary_energy))
+
+q1_2019_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2019_clean$current_emissions_t_co2_yr))
+
+q2_2019_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2019_clean$co2_emissions_per_floor_area))
+
+q2_2019_clean$primary_energy <- as.numeric(as.character(q2_2019_clean$primary_energy))
+
+q2_2019_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2019_clean$current_emissions_t_co2_yr))
+
+q3_2019_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2019_clean$co2_emissions_per_floor_area))
+
+q3_2019_clean$primary_energy <- as.numeric(as.character(q3_2019_clean$primary_energy))
+
+q3_2019_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2019_clean$current_emissions_t_co2_yr))
+
+q4_2019_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2019_clean$co2_emissions_per_floor_area))
+
+q4_2019_clean$primary_energy <- as.numeric(as.character(q4_2019_clean$primary_energy))
+
+q4_2019_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2019_clean$current_emissions_t_co2_yr))
+```
+
+
+#Converting from string to numeric for energy columns in 2018 datasets
+```{r}
+q1_2018_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2018_clean$co2_emissions_per_floor_area))
+
+q1_2018_clean$primary_energy <- as.numeric(as.character(q1_2018_clean$primary_energy))
+
+q1_2018_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2018_clean$current_emissions_t_co2_yr))
+
+q2_2018_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2018_clean$co2_emissions_per_floor_area))
+
+q2_2018_clean$primary_energy <- as.numeric(as.character(q2_2018_clean$primary_energy))
+
+q2_2018_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2018_clean$current_emissions_t_co2_yr))
+
+q3_2018_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2018_clean$co2_emissions_per_floor_area))
+
+q3_2018_clean$primary_energy <- as.numeric(as.character(q3_2018_clean$primary_energy))
+
+q3_2018_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2018_clean$current_emissions_t_co2_yr))
+
+q4_2018_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2018_clean$co2_emissions_per_floor_area))
+
+q4_2018_clean$primary_energy <- as.numeric(as.character(q4_2018_clean$primary_energy))
+
+q4_2018_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2018_clean$current_emissions_t_co2_yr))
+```
+
+
+#Converting from string to numeric for energy columns in 2017 datasets
+```{r}
+q1_2017_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2017_clean$co2_emissions_per_floor_area))
+
+q1_2017_clean$primary_energy <- as.numeric(as.character(q1_2017_clean$primary_energy))
+
+q1_2017_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2017_clean$current_emissions_t_co2_yr))
+
+q2_2017_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2017_clean$co2_emissions_per_floor_area))
+
+q2_2017_clean$primary_energy <- as.numeric(as.character(q2_2017_clean$primary_energy))
+
+q2_2017_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2017_clean$current_emissions_t_co2_yr))
+
+q3_2017_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2017_clean$co2_emissions_per_floor_area))
+
+q3_2017_clean$primary_energy <- as.numeric(as.character(q3_2017_clean$primary_energy))
+
+q3_2017_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2017_clean$current_emissions_t_co2_yr))
+
+q4_2017_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2017_clean$co2_emissions_per_floor_area))
+
+q4_2017_clean$primary_energy <- as.numeric(as.character(q4_2017_clean$primary_energy))
+
+q4_2017_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2017_clean$current_emissions_t_co2_yr))
+```
+
+
+
+#Converting from string to numeric for energy columns in 2016 datasets
+```{r}
+q1_2016_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2016_clean$co2_emissions_per_floor_area))
+
+q1_2016_clean$primary_energy <- as.numeric(as.character(q1_2016_clean$primary_energy))
+
+q1_2016_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2016_clean$current_emissions_t_co2_yr))
+
+q2_2016_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2016_clean$co2_emissions_per_floor_area))
+
+q2_2016_clean$primary_energy <- as.numeric(as.character(q2_2016_clean$primary_energy))
+
+q2_2016_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2016_clean$current_emissions_t_co2_yr))
+
+q3_2016_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2016_clean$co2_emissions_per_floor_area))
+
+q3_2016_clean$primary_energy <- as.numeric(as.character(q3_2016_clean$primary_energy))
+
+q3_2016_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2016_clean$current_emissions_t_co2_yr))
+
+q4_2016_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2016_clean$co2_emissions_per_floor_area))
+
+q4_2016_clean$primary_energy <- as.numeric(as.character(q4_2016_clean$primary_energy))
+
+q4_2016_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2016_clean$current_emissions_t_co2_yr))
+```
+
+
+
+#Converting from string to numeric for energy columns in 2015 datasets
+```{r}
+q1_2015_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2015_clean$co2_emissions_per_floor_area))
+
+q1_2015_clean$primary_energy <- as.numeric(as.character(q1_2015_clean$primary_energy))
+
+q1_2015_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2015_clean$current_emissions_t_co2_yr))
+
+q2_2015_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2015_clean$co2_emissions_per_floor_area))
+
+q2_2015_clean$primary_energy <- as.numeric(as.character(q2_2015_clean$primary_energy))
+
+q2_2015_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2015_clean$current_emissions_t_co2_yr))
+
+q3_2015_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2015_clean$co2_emissions_per_floor_area))
+
+q3_2015_clean$primary_energy <- as.numeric(as.character(q3_2015_clean$primary_energy))
+
+q3_2015_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2015_clean$current_emissions_t_co2_yr))
+
+q4_2015_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2015_clean$co2_emissions_per_floor_area))
+
+q4_2015_clean$primary_energy <- as.numeric(as.character(q4_2015_clean$primary_energy))
+
+q4_2015_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2015_clean$current_emissions_t_co2_yr))
+```
+
+
+
+#Converting from string to numeric for energy columns in 2014 datasets
+```{r}
+q1_2014_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2014_clean$co2_emissions_per_floor_area))
+
+q1_2014_clean$primary_energy <- as.numeric(as.character(q1_2014_clean$primary_energy))
+
+q1_2014_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2014_clean$current_emissions_t_co2_yr))
+
+q2_2014_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2014_clean$co2_emissions_per_floor_area))
+
+q2_2014_clean$primary_energy <- as.numeric(as.character(q2_2014_clean$primary_energy))
+
+q2_2014_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2014_clean$current_emissions_t_co2_yr))
+
+q3_2014_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2014_clean$co2_emissions_per_floor_area))
+
+q3_2014_clean$primary_energy <- as.numeric(as.character(q3_2014_clean$primary_energy))
+
+q3_2014_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2014_clean$current_emissions_t_co2_yr))
+
+q4_2014_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2014_clean$co2_emissions_per_floor_area))
+
+q4_2014_clean$primary_energy <- as.numeric(as.character(q4_2014_clean$primary_energy))
+
+q4_2014_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2014_clean$current_emissions_t_co2_yr))
+```
+
+
+#Converting from string to numeric for energy columns in 2013 datasets
+```{r}
+q1_2013_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q1_2013_clean$co2_emissions_per_floor_area))
+
+q1_2013_clean$primary_energy <- as.numeric(as.character(q1_2013_clean$primary_energy))
+
+q1_2013_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q1_2013_clean$current_emissions_t_co2_yr))
+
+q2_2013_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q2_2013_clean$co2_emissions_per_floor_area))
+
+q2_2013_clean$primary_energy <- as.numeric(as.character(q2_2013_clean$primary_energy))
+
+q2_2013_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q2_2013_clean$current_emissions_t_co2_yr))
+
+q3_2013_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q3_2013_clean$co2_emissions_per_floor_area))
+
+q3_2013_clean$primary_energy <- as.numeric(as.character(q3_2013_clean$primary_energy))
+
+q3_2013_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q3_2013_clean$current_emissions_t_co2_yr))
+
+q4_2013_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2013_clean$co2_emissions_per_floor_area))
+
+q4_2013_clean$primary_energy <- as.numeric(as.character(q4_2013_clean$primary_energy))
+
+q4_2013_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2013_clean$current_emissions_t_co2_yr))
+```
+
+#Converting from string to numeric for energy columns in 2012 dataset
+
+```{r}
+q4_2012_clean$co2_emissions_per_floor_area <- as.numeric(as.character(q4_2012_clean$co2_emissions_per_floor_area))
+
+q4_2012_clean$primary_energy <- as.numeric(as.character(q4_2012_clean$primary_energy))
+
+q4_2012_clean$current_emissions_t_co2_yr <- as.numeric(as.character(q4_2012_clean$current_emissions_t_co2_yr))
+```
+
+
+#Removing post_town & postcode for 2019
+```{r}
+q1_2019_clean <- q1_2019_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2019_clean <- q2_2019_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2019_clean <- q3_2019_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2019_clean <- q4_2019_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2018
+```{r}
+q1_2018_clean <- q1_2018_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2018_clean <- q2_2018_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2018_clean <- q3_2018_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2018_clean <- q4_2018_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2017
+```{r}
+q1_2017_clean <- q1_2017_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2017_clean <- q2_2017_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2017_clean <- q3_2017_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2017_clean <- q4_2017_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2016
+```{r}
+q1_2016_clean <- q1_2016_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2016_clean <- q2_2016_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2016_clean <- q3_2016_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2016_clean <- q4_2016_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2015
+```{r}
+q1_2015_clean <- q1_2015_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2015_clean <- q2_2015_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2015_clean <- q3_2015_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2015_clean <- q4_2015_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2014
+```{r}
+q1_2014_clean <- q1_2014_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2014_clean <- q2_2014_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2014_clean <- q3_2014_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2014_clean <- q4_2014_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2013
+```{r}
+q1_2013_clean <- q1_2013_clean %>% 
+  select(-post_town, -postcode)
+
+q2_2013_clean <- q2_2013_clean %>% 
+  select(-post_town, -postcode)
+
+q3_2013_clean <- q3_2013_clean %>% 
+  select(-post_town, -postcode)
+
+q4_2013_clean <- q4_2013_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+#Removing post_town & postcode for 2012
+```{r}
+q4_2012_clean <- q4_2012_clean %>% 
+  select(-post_town, -postcode)
+```
+
+
+# Adding year and quarter columns for 2019
+```{r}
+q1_2019_clean <- q1_2019_clean %>% 
+  mutate(
+    year = "2019",
+    quarter = "1")
+
+q2_2019_clean <- q2_2019_clean %>% 
+  mutate(
+    year = "2019",
+    quarter = "2")
+
+q3_2019_clean <- q3_2019_clean %>% 
+  mutate(
+    year = "2019",
+    quarter = "3")
+
+q4_2019_clean <- q4_2019_clean %>% 
+  mutate(
+    year = "2019",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2018
+```{r}
+q1_2018_clean <- q1_2018_clean %>% 
+  mutate(
+    year = "2018",
+    quarter = "1")
+
+q2_2018_clean <- q2_2018_clean %>% 
+  mutate(
+    year = "2018",
+    quarter = "2")
+
+q3_2018_clean <- q3_2018_clean %>% 
+  mutate(
+    year = "2018",
+    quarter = "3")
+
+q4_2018_clean <- q4_2018_clean %>% 
+  mutate(
+    year = "2018",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2017
+```{r}
+q1_2017_clean <- q1_2017_clean %>% 
+  mutate(
+    year = "2017",
+    quarter = "1")
+
+q2_2017_clean <- q2_2017_clean %>% 
+  mutate(
+    year = "2017",
+    quarter = "2")
+
+q3_2017_clean <- q3_2017_clean %>% 
+  mutate(
+    year = "2017",
+    quarter = "3")
+
+q4_2017_clean <- q4_2017_clean %>% 
+  mutate(
+    year = "2017",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2016
+```{r}
+q1_2016_clean <- q1_2016_clean %>% 
+  mutate(
+    year = "2016",
+    quarter = "1")
+
+q2_2016_clean <- q2_2016_clean %>% 
+  mutate(
+    year = "2016",
+    quarter = "2")
+
+q3_2016_clean <- q3_2016_clean %>% 
+  mutate(
+    year = "2016",
+    quarter = "3")
+
+q4_2016_clean <- q4_2016_clean %>% 
+  mutate(
+    year = "2016",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2015
+```{r}
+q1_2015_clean <- q1_2015_clean %>% 
+  mutate(
+    year = "2015",
+    quarter = "1")
+
+q2_2015_clean <- q2_2015_clean %>% 
+  mutate(
+    year = "2015",
+    quarter = "2")
+
+q3_2015_clean <- q3_2015_clean %>% 
+  mutate(
+    year = "2015",
+    quarter = "3")
+
+q4_2015_clean <- q4_2015_clean %>% 
+  mutate(
+    year = "2015",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2014
+```{r}
+q1_2014_clean <- q1_2014_clean %>% 
+  mutate(
+    year = "2014",
+    quarter = "1")
+
+q2_2014_clean <- q2_2014_clean %>% 
+  mutate(
+    year = "2014",
+    quarter = "2")
+
+q3_2014_clean <- q3_2014_clean %>% 
+  mutate(
+    year = "2014",
+    quarter = "3")
+
+q4_2014_clean <- q4_2014_clean %>% 
+  mutate(
+    year = "2014",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2013
+```{r}
+q1_2013_clean <- q1_2013_clean %>% 
+  mutate(
+    year = "2013",
+    quarter = "1")
+
+q2_2013_clean <- q2_2013_clean %>% 
+  mutate(
+    year = "2013",
+    quarter = "2")
+
+q3_2013_clean <- q3_2013_clean %>% 
+  mutate(
+    year = "2013",
+    quarter = "3")
+
+q4_2013_clean <- q4_2013_clean %>% 
+  mutate(
+    year = "2013",
+    quarter = "4")
+```
+
+
+# Adding year and quarter columns for 2012
+```{r}
+q4_2012_clean <- q4_2012_clean %>% 
+  mutate(
+    year = "2012",
+    quarter = "4")
+```
+
+
+# Joining 2012 - 2020 data 
+```{r}
+home_energy <- rbind(q1_2020_clean, q2_2020_clean, q3_2020_clean, q4_2020_clean, 
+                     q1_2019_clean, q2_2019_clean, q3_2019_clean, q4_2019_clean,
+                     q1_2018_clean, q2_2018_clean, q3_2018_clean, q4_2018_clean, 
+                     q1_2017_clean, q2_2017_clean, q3_2017_clean, q4_2017_clean,
+                     q1_2016_clean, q2_2016_clean, q3_2016_clean, q4_2016_clean, 
+                     q1_2015_clean, q2_2015_clean, q3_2015_clean, q4_2015_clean,
+                     q1_2014_clean, q2_2014_clean, q3_2014_clean, q4_2014_clean, 
+                     q1_2013_clean, q2_2013_clean, q3_2013_clean, q4_2013_clean,
+                     q4_2012_clean) 
+```
+
+#Joining 2019 & 2020 datasets with datazone_lookup
+```{r}
+home_energy_zone <- home_energy %>% 
   left_join(zone_lookup_clean, by = "data_zone")
 ```
 
 
 
-# Joining 2020 data (all quarters together)
 ```{r}
-home_energy_2020 <- rbind(q1_2020_zone, q2_2020_zone, q3_2020_zone, q4_2020_zone) 
+home_energy_zone %>% 
+  summarise(across(.fns = ~sum(is.na(.x))))
 ```
+
+
+```{r}
+home_energy_zone <- home_energy_zone %>% 
+  drop_na(data_zone)
+```
+
 
 #Writing to csv
 ```{r}
-write_csv(home_energy_2020, "clean_data/home_energy_2020.csv")
-```
-
-
-```{r}
-home_energy_2020 %>% 
-  summarise(across(.fns = ~sum(is.na(.x))))
+write_csv(home_energy_zone, (here("clean_data/home_energy.csv")))
 ```
 
 
@@ -310,9 +1313,8 @@ home_energy_2020 %>%
 town_mean_q1 <- q1_2020_zone %>% 
   group_by(ca_name) %>% 
   summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = round(mean(co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2),
-            mean_primary_energy_indicator_k_wh_m_year = round(mean(primary_energy_indicator_k_wh_m_year), digits = 2),
+            mean_primary_energy = round(mean(primary_energy), digits = 2),
             mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
 town_mean_q1
 
 ```
-
