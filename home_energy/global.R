@@ -1,0 +1,12 @@
+library(shiny)
+library(shinydashboard)
+library(dashboardthemes)
+library(tidyverse)
+library(sf)
+library(here)
+library(scales)
+library(leaflet)
+library(htmltools)
+library(janitor)
+
+home_energy <- read_csv(here("clean_data/home_energy.csv")) 
