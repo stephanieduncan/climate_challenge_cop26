@@ -1,0 +1,13 @@
+name: home_energy
+title: home_energy
+username:
+account: stephanieduncan
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3972042
+bundleId: 4476193
+url: https://stephanieduncan.shinyapps.io/home_energy/
+when: 1618505873.61013
+lastSyncTime: 1618505873.61016
+asMultiple: FALSE
+asStatic: FALSE

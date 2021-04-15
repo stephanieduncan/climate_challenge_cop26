@@ -32,27 +32,59 @@ energy_means_all <- energy_means %>%
             mean_primary = round(mean(mean_primary_energy), digits = 2),
             mean_current_emissions_all = round(mean(mean_current_emissions), digits = 2))
 
+#add labels for map
+energy_means_all <- energy_means_all %>%
+  mutate(
+    leaflet_labels = paste(
+      "<b>",
+      ca_name,
+      "</b>" ,
+      br(),
+      "Average Primary Energy: ",
+      mean_primary,
+      "kWh/m2/year",
+      br(),
+      "Average CO2 Emissions per CFA: ",
+      mean_co2,
+      "kg CO2e/m2/yr",
+      br(),
+      "Average Current Emissions: ",
+      mean_current_emissions_all,
+      "Tonnes per Year"
+    )
+  )
+
 
 #joining home energy data with shapefile
 la_scotland_home_energy <- la_map_scotland %>%
   left_join(energy_means_all, by = c("area_cod_1" = "ca"))
 
 #Mean CO2 Emissions
-# Set pallete for mean co2_emissions across households in Scotland
+# Set pallete for mean co2_emissions pfa across households in Scotland
 pal_co2_emissions <- colorNumeric(palette = "YlGnBu",
                                   domain = la_scotland_home_energy$mean_co2)
 
 #Mean Primary Energy
 # Set pallete for mean primary energy across households in Scotland
-pal_primary_energy <- colorNumeric(palette = "OrRd",
+pal_primary_energy <- colorNumeric(palette = "RdPu",
                                   domain = la_scotland_home_energy$mean_primary)
 
 #Mean Current Emissions
 # Set pallete for mean current emissions across households in Scotland
-pal_current_emissions <- colorNumeric(palette = "RdPu",
+pal_current_emissions <- colorNumeric(palette = "OrRd",
                                    domain = la_scotland_home_energy$mean_current_emissions_all)
 
 
 #Set boundaries of Scotland
 bbox <- st_bbox(la_scotland_home_energy) %>%
   as.vector()
+
+css = HTML("
+  .leaflet-top, .leaflet-bottom {
+    z-index: unset !important;
+  }
+
+  .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+    z-index: 10000000000 !important;
+  }
+")

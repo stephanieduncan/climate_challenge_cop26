@@ -23,7 +23,7 @@ ui <- dashboardPage(
       
       # overview of Scotland
       tabItem(tabName = "scotland_overview",
-              h2("How is Scotland doing?"),
+              h2("An Overview of Home Energy in Scotland by Year"),
               
               fluidRow(
                 box(width = 12,
@@ -70,7 +70,7 @@ ui <- dashboardPage(
       
       # home energy content
       tabItem(tabName = "home_energy_area",
-              h2("Temporal"),
+              h2("Home Energy in Scotland over Time by Area"),
               
               fluidRow(
                 box(width = 12,
@@ -116,7 +116,7 @@ ui <- dashboardPage(
     tabItem(tabName = "map",
             h2("Home Energy in Scotland"),
             fluidRow(
-             
+              tags$head(tags$style(css)),
               leafletOutput("map", height = 500),
               )
             ),
@@ -130,13 +130,11 @@ ui <- dashboardPage(
                                    "Stephanie Duncan")),
               "This interactive dashboard gives insights and trends on home energy in Scotland between 2012 - 2020.",
               br(),
-              "Definitions:-",
               br(),
-              "Primary Energy - the amount of energy required at source, before conversion and transmission, to meet the calculated energy demand of the dwelling (Units: kWh/m2/year).",
-              br(),
-              "Current CO2 Emissions - The total annual emissions reduction for the building based upon the calculated energy demand for heating, cooling, lighting and ventilating the building. (Units: tonnes per year).",
-              br(),
-              "CO2 Emissions per Current Floor Area - Annual CO2 equivalent emissions per square metre of floor area (units: kg.CO2e/m2/yr)",
+              tags$strong("Home Energy Definitions"),
+              tags$li("Primary Energy - the amount of energy required at source, before conversion and transmission, to meet the calculated energy demand of the dwelling (Units: kWh/m2/year)."),
+              tags$li("Current CO2 Emissions - The total annual emissions reduction for the building based upon the calculated energy demand for heating, cooling, lighting and ventilating the building. (Units: tonnes per year)."),
+              tags$li("CO2 Emissions per Current Floor Area - Annual CO2 equivalent emissions per square metre of floor area (units: kg.CO2e/m2/yr)"),
               br(),
               "The code I wrote to produce this dashboard can be found on my ", tags$a(href = "https://github.com/stephanieduncan/climate_challenge_cop26/", "Github Repository"),
               br(),
