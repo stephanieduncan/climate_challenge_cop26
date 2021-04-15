@@ -23,15 +23,18 @@ home_energy <- read_csv(here("clean_data/home_energy.csv"))
 ```
 
 
+
 #Table of the means per town for each year
 ```{r}
 energy_means <- home_energy %>% 
-  group_by(ca_name, year) %>% 
+  group_by(ca, ca_name, year) %>% 
   summarise(mean_co2_pfa = round(mean(co2_emissions_per_floor_area), digits = 2),
             mean_primary_energy = round(mean(primary_energy), digits = 2),
             mean_current_emissions = round(mean(current_emissions_t_co2_yr), digits = 2))
 energy_means
 ```
+
+
 
 #Visualising mean_co2_emissions_current_per_floor_area for cities from 2012 to 2020
 ```{r}
@@ -113,4 +116,83 @@ mean_current_emissions %>%
   theme(axis.text.x = element_text(angle=45,hjust=1)) 
 ```
 
+```{r}
+#Energy means all time
+energy_means_all <- energy_means %>% 
+  group_by(ca, ca_name) %>% 
+  summarise(mean_co2 = round(mean(mean_co2_pfa), digits = 2),
+            mean_primary = round(mean(mean_primary_energy), digits = 2),
+            mean_current_emissions_all = round(mean(mean_current_emissions), digits = 2))
+  
+```
+
+
+
+Map
+
+```{r}
+#adding labels for map
+energy_means_labels <- energy_means_all %>%
+  mutate(
+    leaflet_lb = paste(
+      "<b>",
+      ca_name,
+      "</b>" ,
+      br(),
+      "Mean Co2 Emissions: ",
+      mean_co2,
+      br(),
+      "from 2012 to 2020")
+  )
+```
+
+
+Map
+```{r}
+#Reading in shapefile
+la_map_scotland <- st_read(here("clean_data/scotland_map_files/scotland_council_areas_map.shp")) %>%  
+  clean_names()
+la_map_scotland
+```
+
+
+Map
+
+```{r}
+#joining home energy data with shapefile
+la_scotland_home_energy <- la_map_scotland %>%
+  left_join(energy_means_labels, by = c("area_cod_1" = "ca"))
+
+la_scotland_home_energy
+```
+
+#Mean CO2 Emissions
+```{r}
+# Set pallete for mean co2_emissions across households in Scotland
+pal_co2_emissions <- colorNumeric(palette = "YlGnBu",
+                         domain = la_scotland_home_energy$mean_co2)
+
+
+#Set boundaries of Scotland
+bbox <- st_bbox(la_scotland_home_energy) %>%
+  as.vector()
+```
+
+
+```{r}
+leaflet(la_scotland_home_energy) %>%
+      #adding base tiles
+      addProviderTiles("CartoDB.Positron") %>%
+      #setting bounds of map
+      fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>%
+      setView(lat = 56, lng = -4.3, zoom = 6) %>% 
+  addPolygons(
+    color = "grey", weight = 1,
+    fillColor = ~ pal_co2_emissions(mean_co2), fillOpacity = 0.5
+  ) %>%
+  addLegend(
+    pal = pal_co2_emissions, values = ~mean_co2, opacity = 0.5,
+    title = "Average CO2 Emissions", position = "bottomright"
+  )
+```
 

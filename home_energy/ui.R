@@ -1,12 +1,3 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 
 
 source("global.R")
@@ -18,7 +9,8 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(
       menuItem("Overview", tabName = "scotland_overview"),
-      menuItem("Home Energy by Area", tabName = "home_energy_area"),
+      menuItem("Temporal", tabName = "home_energy_area"),
+      menuItem("Home Energy in Scotland", tabName = "map"),
       menuItem("About", tabName = "about")
     )
   ),
@@ -49,21 +41,21 @@ ui <- dashboardPage(
               fluidRow(
                 
                 box(
-                  title = "CO2 Emissions in homes per Current Floor Area",
+                  title = "Average CO2 Emissions per Current Floor Area",
                   status = "primary",
                   solidHeader = TRUE,
                   plotOutput("co2_pfa_overview", height = 250)
                 ),
                 
                 box(
-                  title = "Primary Energy",
+                  title = "Average Primary Energy",
                   status = "primary",
                   solidHeader = TRUE,
                   plotOutput("primary_overview", height = 250)
                 ),
                 
                 box(
-                  title = "Current Emissions",
+                  title = "Average Current CO2 Emissions",
                   status = "primary",
                   solidHeader = TRUE,
                   plotOutput("current_overview", height = 250)
@@ -96,7 +88,7 @@ ui <- dashboardPage(
               fluidRow(
                 
                 box(
-                  title = "Home Energy by Area", 
+                  title = "Average CO2 Emissions per Current Floor Area", 
                   solidHeader = TRUE,
                   status = "primary",
                   plotOutput("home_energy_output", height = 250)
@@ -110,13 +102,24 @@ ui <- dashboardPage(
                 ),
         
         box(
-          title = "Current Emissions by Area", 
+          title = "Average Current CO2 Emissions", 
           solidHeader = TRUE,
           status = "primary",
           plotOutput("current_emissions_output", height = 250)
         )
               )
     ), 
+    
+    
+    #map content
+    
+    tabItem(tabName = "map",
+            h2("Home Energy in Scotland"),
+            fluidRow(
+             
+              leafletOutput("map", height = 500),
+              )
+            ),
       
       
       
@@ -126,6 +129,14 @@ ui <- dashboardPage(
               h3("Author:", tags$a(href = "https://www.linkedin.com/in/stephanie-mpd/",
                                    "Stephanie Duncan")),
               "This interactive dashboard gives insights and trends on home energy in Scotland between 2012 - 2020.",
+              br(),
+              "Definitions:-",
+              br(),
+              "Primary Energy - the amount of energy required at source, before conversion and transmission, to meet the calculated energy demand of the dwelling (Units: kWh/m2/year).",
+              br(),
+              "Current CO2 Emissions - The total annual emissions reduction for the building based upon the calculated energy demand for heating, cooling, lighting and ventilating the building. (Units: tonnes per year).",
+              br(),
+              "CO2 Emissions per Current Floor Area - Annual CO2 equivalent emissions per square metre of floor area (units: kg.CO2e/m2/yr)",
               br(),
               "The code I wrote to produce this dashboard can be found on my ", tags$a(href = "https://github.com/stephanieduncan/climate_challenge_cop26/", "Github Repository"),
               br(),

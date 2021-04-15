@@ -24,7 +24,7 @@ zone_lookup <- read_csv(here("raw_data/datazone_lookup.csv")) %>% clean_names()
 
 ```{r}
 zone_lookup_clean <- zone_lookup %>% 
-  select(data_zone, ca_name)
+  select(data_zone, ca_name, ca)
 ```
 
 
@@ -1306,15 +1306,3 @@ home_energy_zone <- home_energy_zone %>%
 write_csv(home_energy_zone, (here("clean_data/home_energy.csv")))
 ```
 
-
-#Table of the means per town for quarter 1 only
-
-```{r}
-town_mean_q1 <- q1_2020_zone %>% 
-  group_by(ca_name) %>% 
-  summarise(mean_co2_emissions_current_per_floor_area_kg_co2_m_yr = round(mean(co2_emissions_current_per_floor_area_kg_co2_m_yr), digits = 2),
-            mean_primary_energy = round(mean(primary_energy), digits = 2),
-            mean_current_emissions_t_co2_yr = round(mean(current_emissions_t_co2_yr), digits = 2))
-town_mean_q1
-
-```
