@@ -25,7 +25,7 @@ energy_means <- home_energy %>%
             mean_current_emissions = round(mean(current_emissions_t_co2_yr), digits = 2))
 energy_means
 
-#Energy means all time
+#Energy means 2012 - 2020
 energy_means_all <- energy_means %>% 
   group_by(ca, ca_name) %>% 
   summarise(mean_co2 = round(mean(mean_co2_pfa), digits = 2),
