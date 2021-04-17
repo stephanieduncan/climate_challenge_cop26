@@ -30,6 +30,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+/scotland_map_files
+
 ### R ###
 # History files
 .Rhistory
@@ -37,6 +39,7 @@ Temporary Items
 
 # Session Data files
 .RData
+.RDataTmp
 
 # User-specific files
 .Ruserdata
@@ -52,6 +55,8 @@ Temporary Items
 
 # RStudio files
 .Rproj.user/
+
+*.Rproj
 
 # produced vignettes
 vignettes/*.html
@@ -81,7 +86,12 @@ vignettes/*.pdf
 *.txt
 *.xls
 *.xlsx
-
+*.pdf
+*.dbf
+*.prj
+*.shp
+*.shx
+*.nb.html
 
 #python checkpoint
 **/.ipynb_checkpoints
