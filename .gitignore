@@ -80,6 +80,8 @@ vignettes/*.pdf
 # R package: bookdown caching files
 /*_files/
 
+/clean_data
+
 ### Data files ###
 *.csv
 *.rds

@@ -24,7 +24,7 @@ home_energy <- read_csv(here("clean_data/home_energy.csv"))
 
 
 
-#Table of the means per town for each year
+#Table of the means per town and postcode for each year, quarter
 ```{r}
 energy_means <- home_energy %>% 
   group_by(ca, ca_name, year) %>% 
@@ -40,7 +40,7 @@ energy_means
 ```{r}
 
 mean_co2_emissions <- energy_means %>% 
-  group_by(ca_name) %>% 
+  group_by(postcode, year) %>% 
   summarise(mean_co2_emissions_pfa = round(mean(mean_co2_pfa), digits = 2))
 
 mean_co2_emissions
@@ -194,5 +194,123 @@ leaflet(la_scotland_home_energy) %>%
     pal = pal_co2_emissions, values = ~mean_co2, opacity = 0.5,
     title = "Average CO2 Emissions", position = "bottomright"
   )
+```
+
+```{r}
+potential_current_emissions <- home_energy %>% 
+  #select(year, potential_co2, current_emissions_t_co2_yr) %>% 
+  group_by(year, potential_co2, current_emissions_t_co2_yr) %>% 
+    summarise(mean_current_emissions_all = round(mean(current_emissions_t_co2_yr), digits = 2),
+              mean_potential_emissions = round(exp(sum(log(potential_co2[potential_co2 > 0]), na.rm=TRUE) / length(potential_co2)), digits = 2))
+  potential_current_emissions
+```
+```{r}
+#Potential by Area
+home_energy %>% 
+      group_by(ca_name, year) %>% 
+      summarise(mean_potential_emissions = round(exp(sum(log(potential_co2[potential_co2 > 0]), na.rm=TRUE) / length(potential_co2)), digits = 2)) %>% 
+      ggplot() +
+      aes(x = reorder(ca_name, mean_potential_emissions), y = mean_potential_emissions) +
+      geom_col(fill = "#3c8dbc") +
+      coord_flip() +
+      theme_minimal() +
+      labs(
+        y = "Tonnes per Year",
+        x = "Local Authority Area"
+        #title = "Mean Potential Emissions of Homes"
+      ) +
+      theme(axis.text.x = element_text(angle=45,hjust=1)) 
+```
+
+
+```{r}
+home_energy_zone %>% 
+      group_by(tenure, year) %>% 
+      summarise(mean_current_emissions = round(mean(current_emissions_t_co2_yr), digits = 2)) %>% 
+      ggplot() +
+      aes(x = year, y = mean_current_emissions, colour = tenure) +
+      geom_line(color = "#3c8dbc") +
+      geom_point(color = "#3c8dbc") +
+      theme_minimal() +
+      labs(
+        y = "Tonnes per Year",
+        x = "Year",
+        #title = "Mean Current Emissions of Homes",
+        subtitle = "2012 - 2020"
+      ) +
+      theme(axis.text.x = element_text(angle=45,hjust=1)) 
+```
+
+
+```{r}
+#Potential Emissions Overall Scotland
+    potential_home_energy <- home_energy %>%
+      group_by(year) %>% 
+      summarise(mean_potential_emissions = round(exp(sum(log(potential_co2[potential_co2 > 0]), na.rm=TRUE) / length(potential_co2)), digits = 2)) 
+
+potential_home_energy %>% 
+      ggplot() +
+      aes(x = year, y = mean_potential_emissions) +
+      geom_line(color = "#3c8dbc") +
+      geom_point(color = "#3c8dbc") +
+      theme_minimal() +
+      labs(
+        y = "Tonnes per Year",
+        x = "Year",
+        title = "Potential CO2 Emissions"
+      ) +
+      theme(axis.text.x = element_text(angle=45,hjust=1)) 
+
+potential_home_energy
+```
+
+```{r}
+#Current Emissions Overall Scotland
+    current_home_energy <- home_energy %>%
+      group_by(year) %>% 
+      summarise(mean_current_emissions = round(mean(current_emissions_t_co2_yr), digits = 2)) 
+
+current_home_energy %>% 
+      ggplot() +
+      aes(x = year, y = mean_current_emissions) +
+      geom_line(color = "#3c8dbc") +
+      geom_point(color = "#3c8dbc") +
+      theme_minimal() +
+      labs(
+        y = "Tonnes per Year",
+        x = "Year",
+        title = "Current CO2 Emissions"
+      ) +
+      theme(axis.text.x = element_text(angle=45,hjust=1)) 
+
+current_home_energy
+```
+
+```{r}
+current_potential = merge(current_home_energy, potential_home_energy, by="year")
+head(current_potential)
+```
+
+```{r}
+current_potentialMelted <- reshape2::melt(current_potential, id.var='year')
+head(current_potentialMelted)
+```
+
+```{r}
+cols <- c("#3c8dbc", "#5cbd9d")
+
+ggplot(current_potentialMelted, aes(x=year, y=value, col=variable)) +
+      geom_line() +
+      geom_point(size=2, shape=21, fill="white") +
+    scale_colour_manual(values = cols,
+                        name = NULL,
+                        labels = c("Average Current Emissions", "Average Potential Emissions")) +
+      theme_minimal() +
+      labs(
+        y = "Tonnes per Year",
+        x = "Year",
+        title = "Current vs Potential CO2 Emissions"
+      ) +
+      theme(axis.text.x = element_text(angle=45,hjust=1), legend.position = "bottom") 
 ```
 

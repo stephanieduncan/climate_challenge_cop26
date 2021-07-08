@@ -12,6 +12,24 @@ library(janitor)
 #home energy statistics data merged with geo look up codes for local authority areas
 home_energy <- read_csv(here("clean_data/home_energy.csv")) 
 
+#current and potential
+#Potential Emissions Overall Scotland
+potential_home_energy <- home_energy %>%
+  group_by(year) %>% 
+  summarise(mean_potential_emissions = round(exp(sum(log(potential_co2[potential_co2 > 0]), na.rm=TRUE) / length(potential_co2)), digits = 2)) 
+
+#Current Emissions Overall Scotland
+current_home_energy <- home_energy %>%
+  group_by(year) %>% 
+  summarise(mean_current_emissions = round(mean(current_emissions_t_co2_yr), digits = 2)) 
+
+current_potential = merge(current_home_energy, potential_home_energy, by="year")
+head(current_potential)
+
+current_potentialMelted <- reshape2::melt(current_potential, id.var='year')
+head(current_potentialMelted)
+
+cols <- c("#3c8dbc", "#5cbd9d")
 
 #Map
 #Reading in shapefile
@@ -67,12 +85,12 @@ pal_co2_emissions <- colorNumeric(palette = "YlGnBu",
 #Mean Primary Energy
 # Set pallete for mean primary energy across households in Scotland
 pal_primary_energy <- colorNumeric(palette = "RdPu",
-                                  domain = la_scotland_home_energy$mean_primary)
+                                   domain = la_scotland_home_energy$mean_primary)
 
 #Mean Current Emissions
 # Set pallete for mean current emissions across households in Scotland
 pal_current_emissions <- colorNumeric(palette = "OrRd",
-                                   domain = la_scotland_home_energy$mean_current_emissions_all)
+                                      domain = la_scotland_home_energy$mean_current_emissions_all)
 
 
 #Set boundaries of Scotland
@@ -83,7 +101,6 @@ css = HTML("
   .leaflet-top, .leaflet-bottom {
     z-index: unset !important;
   }
-
   .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
     z-index: 10000000000 !important;
   }

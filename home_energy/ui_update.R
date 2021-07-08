@@ -8,9 +8,7 @@ ui <- dashboardPage(
   ## Sidebar content
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Primary Energy", tabName = "scotland_overall"),
-      menuItem("CO2 Emissions", tabName = "co2_emissions_household"),
-      menuItem("Current vs Potential", tabName = "current_potential_tab"),
+      menuItem("Scotland Overall", tabName = "scotland_overall"),
       menuItem("Overview", tabName = "scotland_overview"),
       menuItem("Home Energy by Area", tabName = "home_energy_area"),
       menuItem("Map of Scotland", tabName = "map"),
@@ -25,59 +23,17 @@ ui <- dashboardPage(
       
       #overvall
       tabItem(tabName = "scotland_overall",
-               h2("Average Household Primary Energy Consumption in Scotland"),
+               h2("Average Household Energy"),
                
                fluidRow(
                  box(
-                  title = "Scotland Overall",
+                   title = "Average Household Energy Consumption in Scotland",
                    status = "primary",
                    solidHeader = TRUE,
                    plotOutput("scotland_energy_overall", height = 400)
-                 ),
-                 #Tenure
-                 box(
-                   title = "by Tenure",
-                   status = "primary",
-                   solidHeader = TRUE,
-                   plotOutput("tenure_primary", height = 400)
                  )
                )
                ),
-      
-      #CO2 emissions per household
-      tabItem(tabName = "co2_emissions_household",
-              h2("Average CO2 Emissions in Scotland"),
-              
-              fluidRow(
-                box(
-                  title = "Scotland Overall",
-                  status = "primary",
-                  solidHeader = TRUE,
-                  plotOutput("scotland_co2_household", height = 400)
-                ),
-                #Tenure
-                box(
-                  title = "by Tenure",
-                  status = "primary",
-                  solidHeader = TRUE,
-                  plotOutput("tenure_emissions", height = 400)
-                )
-              )
-      ),
-      
-      #overvall
-      tabItem(tabName = "current_potential_tab",
-              h2("Current vs Potential CO2 Emissions in Scotland"),
-              
-              fluidRow(
-                box(
-                  #title = "Current vs Potential CO2 Emissions in Scotland",
-                  status = "primary",
-                  solidHeader = TRUE,
-                  plotOutput("current_potential_plot", height = 400)
-                )
-              )
-      ),
       
       # overview of Scotland
       tabItem(tabName = "scotland_overview",
@@ -86,75 +42,86 @@ ui <- dashboardPage(
               fluidRow(
                 box(width = 12,
                     background = "light-blue",
-                    column(width = 6, 
-                           selectInput(inputId = "year",
+                    column(width = 3, 
+                           div(style="display:inline-block", selectInput(inputId = "year",
                                        label = "Year",
                                        choices = sort(unique(home_energy$year)),
-                                       selected = "2020"
-                           )
-                           )
+                                       selected = "2020")
+                           ),
+                           div(style="display:inline-block", selectInput(inputId = "quarter",
+                                       label = "Quarter",
+                                       choices = sort(unique(home_energy$quarter)),
+                                       selected = "1")
+                           )  
                     )
-                ),
-                        
+                )
+              ),
               
               fluidRow(
+                
+                box(
+                  title = "CO2 Emissions in homes per Current Floor Area",
+                  status = "primary",
+                  solidHeader = TRUE,
+                  plotOutput("co2_pfa_overview", height = 250)
+                ),
+                
                 box(
                   title = "Primary Energy",
                   status = "primary",
                   solidHeader = TRUE,
-                  plotOutput("primary_overview", height = 400)
+                  plotOutput("primary_overview", height = 250)
                 ),
                 
                 box(
-                  title = "Current CO2 Emissions",
+                  title = "Current Emissions",
                   status = "primary",
                   solidHeader = TRUE,
-                  plotOutput("current_overview", height = 400)
-                )
+                  plotOutput("current_overview", height = 250)
+                ),
+                
               )
+              
+              
               ),
       
       
       
       # home energy content
       tabItem(tabName = "home_energy_area",
-              h2("Home Energy by Area"),
+              h2("Temporal"),
               
               fluidRow(
                 box(width = 12,
                     background = "light-blue",
                     column(width = 6,
-                           div(style="display:inline-block; vertical-align:top; width: 150px;",
-                               selectInput(inputId = "ca_name",
-                                           label = "Local Authority",
-                                           choices = sort(unique(home_energy$ca_name)),
-                                           selected = "Aberdeen City")
-                               ),
-                           
-                           div(style="display: inline-block;vertical-align:top; width: 80px;",HTML("<br>")),
-                           
-                               div(style="display:inline-block; vertical-align:top; width: 150px;",
-                                   selectizeInput(inputId = "postcode",
+                           selectInput(inputId = "postcode",
                                        label = "Postcode",
                                        choices = sort(unique(home_energy$postcode)),
-                                       options = list("max-options" = 1),
-                                       selected = ""),
-                                   tags$head(tags$style(HTML(".selectize-input {height: 50px; width: 150px;}")))
+                                       selected = "AB10"
                            )
                     )
               )
               ),
               
               fluidRow(
+                
                 box(
-                  title = "Primary Energy", 
+                  title = "Home Energy by Area", 
+                  solidHeader = TRUE,
+                  status = "primary",
+                  plotOutput("home_energy_output", height = 250)
+              ),
+                
+                box(
+                  title = "Primary Energy by Area", 
                   solidHeader = TRUE,
                   status = "primary",
                   plotOutput("primary_energy_output", height = 250)
                 ),
         
         box(
-          title = "Current CO2 Emissions", 
+          title = "Current Emissions by Area", 
           solidHeader = TRUE,
           status = "primary",
           plotOutput("current_emissions_output", height = 250)
